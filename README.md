@@ -55,3 +55,9 @@ Do not make up Azure Foundry deployment names, endpoints, keys or prices. For st
 ## First task for Codex
 
 > Read AGENTS.md, project.md, docs/litellm-integration.md and config/*.json. Inspect the existing LiteLLM gateway's published model list with authorization. Verify real model deployments, and test (1) text embedding, (2) image-based reasoning and (3) video embedding with a **synthetic** clip. Do not assume the Azure Voyage endpoint works through standard /embeddings. Report results; do not build an adapter without showing a capability gap and requesting approval. Then take one approved MP4/transcript pair through VideoDB (primary) and through the hybrid route if it passed its compatibility gate.
+
+## Use it from Codex or Copilot
+
+A single, automatically discoverable repo skill is at [`.agents/skills/meeting-intelligence/SKILL.md`](.agents/skills/meeting-intelligence/SKILL.md). Open this repo in Codex and type `$meeting-intelligence status` to see whether your selected provider is ready. For tasks, use `$meeting-intelligence analyze Meeting-001` or `$meeting-intelligence find the deployment error`. The skill routes to the existing use-case instructions and honors `config/provider.json`.
+
+See [docs/using-meeting-intelligence.md](docs/using-meeting-intelligence.md) for usage examples, privacy rules and the distinction between documented setup and a working provider.
