@@ -1,20 +1,23 @@
 ---
 name: analyze-meeting
-description: Analyze an authorized meeting recording using VideoDB speech, scene and OCR understanding, returning evidence-backed summaries and timestamped findings.
+description: Analyze an authorized meeting MP4 with the provider chosen in config/provider.json. Retrieve spoken and visual evidence with timestamps, using VideoDB or local video-context MCP.
 ---
 
-# Analyze Meeting
+# Analyze Meeting — Provider Aware
 
-## Input
-Authorized MP4 path or existing VideoDB video ID; goal/questions, optional project label.
+## Inputs
+Authorized MP4 file in `recordings/`, user question, optional project label.
 
-## Workflow
-1. Follow `AGENTS.md` safety and consent requirements.
-2. Invoke the upstream VideoDB skill/MCP; fall back to its Python SDK only where required.
-3. Verify analyses of spoken words, visual scenes and OCR. Do not silently downgrade to transcript only.
-4. Use VideoDB indexing and retrieval; preserve video ID, timestamps and clip URLs where supported.
-5. Deliver: concise summary, what appeared on screen, explicit decisions, open questions and action candidates.
-6. Distinguish observation, speech and inference; mark uncertain findings.
+## Select backend
+1. Read `config/provider.json` first. Allowed values: `videodb` or `local`.
+2. Do not switch provider without explicit user instruction. Do not upload files in local mode.
+3. Confirm privacy/consent and disclose if a cloud coding agent may receive a local frame.
 
-## Output
-Markdown with timestamp links or time ranges for each material claim; include methods and missing analyzers. No external writes without approval.
+## VideoDB route
+Use official VideoDB skill/MCP or maintained Python SDK. Upload approved MP4, execute `spoken_words`, `vlm`, `ocr` understanding; index artifacts; query for grounded moments and clips. Confirm each analyzer status; record provider usage.
+
+## Local route
+Use installed `video-context-mcp` through the agent's MCP client. Invoke `ingest_video`, `get_ingest_status`, `get_video_timeline`, `get_transcript`, `search_videos`, `peek_frame` and optionally `crop_region`. Inspect retrieved frames for visually grounded findings (if image interpretation permitted); no VideoDB upload. Recognize that native local retrieval is not equivalent to automatically running a whole-video VLM analyzer.
+
+## Common deliverable
+Concise meeting summary; observed screen events; dialogue-specific points; explicit decisions vs proposals; open questions; action candidates. Every key claim includes video path/ID + timestamp and an inspectable frame/clip if available. Label **screen observation**, **speech**, **inference**, and **uncertain** separately. Save private report under `data/`; no external writes without approval.

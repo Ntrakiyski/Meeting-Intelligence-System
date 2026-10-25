@@ -1,33 +1,68 @@
 # Meeting Intelligence System
 
-An agent-first, **video-aware** knowledge workflow for Microsoft Teams recordings and other MP4 meeting files.
+An **agent-first** video intelligence workflow for Microsoft Teams MP4 recordings. **Two interchangeable MVP modes**: VideoDB Cloud and local-first open-source video analysis. No custom video backend, GUI, or database needs to be developed.
 
-**MVP approach:** use VideoDB's official agent skill, hosted MCP and Python SDK. Do not develop a custom backend or frontend until an evidenced gap requires one.
+## Choose the provider (Windows PowerShell)
 
-## Start on Windows
+After cloning this repository, create `recordings/` and place one **authorized, non-confidential** MP4 there. The public GitHub repository must never contain private recordings, transcripts, screenshots, or credentials.
 
-1. Clone this repository and open its folder in your preferred AI coding agent (Codex or GitHub Copilot).
-2. Put one authorized, non-sensitive test recording at `recordings/test.mp4` (create this folder locally; it is gitignored).
-3. Sign into [VideoDB Console](https://console.videodb.io) and use the API key already created. **Never paste an API key into chat, commits, or issue descriptions.**
-4. In a PowerShell terminal with Node.js/npx available:
+```powershell
+# VideoDB Cloud: costs VideoDB usage credit
+.\scripts\select-provider.ps1 -Provider videodb
 
-   ```powershell
-   npx skills add video-db/skills
-   ```
+# OR: local extraction, transcription, OCR and search using video-context-mcp
+.\scripts\select-provider.ps1 -Provider local
+```
 
-5. Ask your agent: **"Set up the official VideoDB skill in this repository, authenticate securely without saving the key to Git, and verify its MCP/SDK connectivity."** The official skill documents `/videodb setup` (or your agent's equivalent).
-6. Ask: **"Using the official VideoDB skill, analyze recordings/test.mp4 for spoken words, visual scenes and on-screen text/OCR. Index results, then answer: what errors or configuration screens appeared? Give exact timestamps and playable evidence."**
+The selection is stored in [config/provider.json](config/provider.json). This only chooses the engine: **you must install and configure the selected upstream skill/MCP once**.
 
-This **uses VideoDB cloud processing**; local files and a local agent do not imply offline operation.
+| Mode | Existing tool | Requirement | Cloud boundary |
+|---|---|---|---|
+| `videodb` | [video-db/skills](https://github.com/video-db/skills) + VideoDB SDK/MCP | VideoDB API account/key | Video uploaded/processed by VideoDB |
+| `local` | [video-context-mcp](https://github.com/smallthinkingmachines/video-context-mcp) | Node 22+, local MCP registered | Extraction, OCR, ASR and text search local; **cloud-based coding agents may still receive extracted frames/text** |
 
-## Project documents
+### Setup: VideoDB (one time)
 
-- [project.md](project.md) — goals, scope, technical strategy and acceptance criteria
-- [resources.md](resources.md) — VideoDB-only tools and links
-- [AGENTS.md](AGENTS.md) — agent development and review contract
-- [docs/windows-mvp.md](docs/windows-mvp.md) — reproducible manual acceptance workflow
-- [skills/](skills/) — reusable business/use-case instructions, not competing SDK implementations
+```powershell
+npx skills add video-db/skills
+```
 
-## Guiding rule
+Follow the upstream skill's setup/authentication steps, avoiding storing the API key in Git. The MVP should use `spoken_words`, `vlm`, `ocr`, VideoDB indexing and grounded retrieval. [Windows guide](docs/windows-mvp.md).
 
-**Orchestrate first; implement only if necessary.** No app/API/MCP/React service for the first experiment. Validate perception quality, timestamp citations, privacy, usage costs and reliability before building a product.
+### Setup: Local MCP (one time)
+
+```powershell
+npm install -g @smallthinkingmachines/video-context-mcp
+video-context-mcp setup --all
+video-context-mcp doctor --json
+```
+
+Register the executable as a **stdio MCP server** in Codex (`~/.codex/config.toml`, ensuring it is discoverable on your PATH):
+
+```toml
+[mcp_servers.video-context]
+command = "video-context-mcp"
+```
+
+Restart the agent, verify it can see the tools, and follow [local MVP instructions](docs/local-mvp.md). Initial installation may download media tools and AI models; network access is required for first setup. This provider is MIT-licensed but relatively new; treat Windows runtime support as **documented, not independently verified here**.
+
+### Run the SAME skills in either mode
+
+Open the repo in your coding agent and say:
+
+> Read AGENTS.md, config/provider.json and skills/analyze-meeting/SKILL.md. Using only the selected backend, analyze recordings/test.mp4 including **what is visible on screen** as well as speech. Find one screen-only technical detail and give the exact timestamp and inspectable evidence. Save a local report under data/ and disclose missing capabilities and external data transfers.
+
+The local provider returns frames to the agent; those can be visually inspected if the coding agent supports image inputs. Neither the presence of OCR nor an image-capable agent guarantees accurate visual understanding.
+
+## Project docs
+
+- [project.md](project.md) — vision, dual-provider MVP and decisions
+- [resources.md](resources.md) — VideoDB resources **only**
+- [resources-local.md](resources-local.md) — local open-source alternatives
+- [AGENTS.md](AGENTS.md) — orchestration/safety contract
+- [docs/windows-mvp.md](docs/windows-mvp.md) — VideoDB mode
+- [docs/local-mvp.md](docs/local-mvp.md) — local mode and MCP setup
+- [docs/compare-backends.md](docs/compare-backends.md) — side-by-side scorecard
+- [skills/](skills/) — business-facing agent workflows
+
+**Guiding rule:** Orchestrate first. Add custom implementation only after demonstrating a capability gap.

@@ -1,45 +1,36 @@
-# Windows MVP — Agent-Only Validation
+# Windows MVP — VideoDB Provider (Cloud)
 
 ## Prerequisites
 
-- Windows PowerShell, Node.js + npx, Codex or GitHub Copilot with agent skills support.
-- VideoDB account and an API key.
-- One authorized sample MP4 in a locally created `recordings/` directory.
-- Internet access; VideoDB understanding is hosted.
+- Windows PowerShell, Node.js + npx, Codex or Copilot with VideoDB official skill.
+- VideoDB account/API key. Check free credit/usage in the console.
+- One approved MP4 under `recordings/` (ignored by Git).
+- Internet access and permission to upload this recording to VideoDB.
 
-## Procedure
+## Select provider and install official skill
 
-1. Open this repository in the agent and run:
+```powershell
+.\scripts\select-provider.ps1 -Provider videodb
+npx skills add video-db/skills
+```
 
-   ```powershell
-   npx skills add video-db/skills
-   ```
+Ask your agent to use the official skill's setup instructions to authenticate securely (`/videodb setup` or its equivalent). Never print or commit the API key.
 
-2. Say to the agent: `Read AGENTS.md and project.md. Use the VideoDB skill to set up and validate my VideoDB connection. Do not create a custom application.`
+## Processing
 
-3. Use the upstream skill's setup command (`/videodb setup` in some clients; use the equivalent in Codex/Copilot). Let it show the supported secure way to configure the key. If a local environment variable is needed, consult the current SDK docs (`VIDEO_DB_API_KEY` in the official skill).
+Tell the agent:
 
-4. Say: `Using VideoDB's existing skill or official Python SDK, process recordings/test.mp4. Create spoken_words, vlm and ocr understanding as supported. Index all usable outputs. Do not stop at a transcript.`
+> Read AGENTS.md and skills/analyze-meeting/SKILL.md. Confirm `config/provider.json` says `videodb` and that uploading this approved MP4 is permitted. Using the VideoDB skill or documented Python SDK, process recordings/test.mp4 with spoken_words + vlm + ocr. Index the resulting artifacts and ask what errors/settings/UI states appeared on screen. Return grounded timestamps and clips.
 
-5. Say: `Find a real error, command, setting, diagram or UI change on screen that wasn't evident from speech alone. Return source timestamps, a playable clip when available, and quote only text you can read reliably.`
+The Python SDK documents `understand → index → search/ask`. Agent must verify analyzer completion instead of silently using transcript alone.
 
-6. Say: `Give me (a) five decisions with evidence and uncertainty, (b) outstanding issues, (c) a technical handover, (d) provider credits/usage spent so far.`
+## Validation
 
-7. Manually play the recording at the cited moments. Mark each answer correct/incorrect/uncertain.
+- [ ] Upload approved by operator
+- [ ] `spoken_words`, `vlm`, `ocr` analyzers ran, or failure documented
+- [ ] Screen-only finding identified accurately with exact timestamp or playable source clip
+- [ ] Speech-grounded finding and cross-modal example checked
+- [ ] VideoDB credits before/after recorded in `data/videodb-validation.md`
+- [ ] Any missing modalities and uncertainty explained
 
-## Acceptance checklist
-
-- [ ] MP4 ingested via approved VideoDB account
-- [ ] `spoken_words` analysis completed (or a documented error)
-- [ ] `vlm` scene analysis completed (or a documented error)
-- [ ] `ocr` analysis completed (or a documented error)
-- [ ] Timestamped evidence found for at least one screen-only observation
-- [ ] Agent can answer a question that cannot be answered reliably from transcript alone
-- [ ] Hallucination and low-confidence behavior checked
-- [ ] Privacy/consent verified
-- [ ] Exact usage/cost reviewed in provider console
-- [ ] Findings saved to a local, gitignored report
-
-## Report
-
-Create locally in `data/mvp-validation.md`. Record file ID (not sensitive paths), SDK/skill version, analyzer configuration, source timestamps, manual verdict, processing duration, cost, errors and a recommendation. Do not commit reports containing private meeting details.
+See [docs/compare-backends.md](compare-backends.md) to compare it with local mode on the *same* video.
