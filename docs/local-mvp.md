@@ -44,3 +44,7 @@ Use supplied transcript.txt files. Optional `faster-whisper` CPU int8 base only 
 Record the exact proxy alias IDs (never keys), Foundry model deployments (non-secret names), embedding dimensions, retriever status, one correct screen-only clip, one speech-only citation, costs and whether MP4 chunks/frames left the machine. Save private report under ignored `data/`.
 
 **Status:** Azure/SentrySearch video embedding integration not yet validated on the user's gateway. No real video has been processed.
+
+## Latest implementation contract
+
+Use [docs/GATEWAY-CONTRACT.md](GATEWAY-CONTRACT.md) and [docs/IMPLEMENTATION-PLAN.md](IMPLEMENTATION-PLAN.md) rather than treating this note as the sole implementation specification. Native SentrySearch video embeddings behind Azure/LiteLLM remain **unverified**; current source sends inline base64 MP4 to `/embeddings`, while Foundry Voyage uses `/v1/multimodalembeddings`. Upstream SentrySearch LiteLLM `--rerank` is unsupported; never enable it. If the native integration fails, the limited frame-caption fallback in implementation Phase 3B is allowed as a separately labeled, reduced-coverage trial after recording the blocker and securing model-data consent. It may require isolated minimal glue; no new app/server.

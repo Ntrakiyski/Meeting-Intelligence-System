@@ -14,7 +14,8 @@ Read from repository root:
 2. `project.md`
 3. `config/provider.json` and `config/pipeline.json`
 4. `docs/litellm-integration.md` and provider-specific docs when required
-5. The task-specific `skills/<name>/SKILL.md` named below
+5. `docs/DECISIONS.md`, `docs/DATA-CONTRACTS.md`, `docs/TEST-PLAN.md` and `docs/UPSTREAM-COMPATIBILITY.md` when performing or validating a processing operation
+6. The task-specific `skills/<name>/SKILL.md` named below
 
 ## First steps: identify intent and provider
 
@@ -88,3 +89,7 @@ Use optional `faster-whisper` only when existing transcript timecodes are absent
 - `$meeting-intelligence find the Kubernetes error in the October infrastructure sessions`
 - `$meeting-intelligence compare demos in meeting 12 and meeting 18 with visual evidence`
 - `$meeting-intelligence create a draft handover of the NGC setup`
+
+## After cloning / implementing the MVP
+
+When asked to **build, install, validate, or make the MVP operational**, load `docs/TOMORROW-CODEX-KICKOFF.md` and `docs/IMPLEMENTATION-PLAN.md` and use their explicit phase gates. Do not treat these design docs as tested infrastructure. For hybrid SentrySearch, consult `docs/GATEWAY-CONTRACT.md` before submitting a real MP4; a listed Azure embedding model is insufficient. For any answer, follow `docs/DATA-CONTRACTS.md` evidence schema and `docs/TEST-PLAN.md` validation. Before external processing, see `docs/SECURITY-AND-COSTS.md`.

@@ -1,6 +1,6 @@
 # Agent Operating Contract
 
-Read `project.md`, `config/provider.json`, `config/pipeline.json`, `docs/litellm-integration.md` and the chosen MVP provider guide first.
+**Required read order:** `project.md` → `docs/DECISIONS.md` → `docs/ARCHITECTURE.md` → `docs/IMPLEMENTATION-PLAN.md` → `docs/GATEWAY-CONTRACT.md` → `docs/DATA-CONTRACTS.md` → `docs/TEST-PLAN.md` → `docs/SECURITY-AND-COSTS.md` → `docs/UPSTREAM-COMPATIBILITY.md` → `config/provider.json` + `config/pipeline.json` → chosen provider guide. For a newly cloned project, follow `docs/TOMORROW-CODEX-KICKOFF.md`.
 
 ## Non-negotiable architecture
 
@@ -26,6 +26,10 @@ Public repo: do not commit keys, MP4s, screenshots, transcripts, embeddings or s
 
 ## Development rules
 
-Use maintained upstream skills and CLI/SDK, not new app components. No Go/FastMCP/React/backend for MVP. Small scripts for file pairing/timing only if necessary. Keep `resources.md` VideoDB-only and other references in `resources-local.md`.
+Use maintained upstream skills and CLI/SDK, not new app components. No Go/FastMCP/React/backend for MVP. Small isolated glue scripts for file pairing/timing OR the documented reduced-fidelity frame-caption fallback only when native video embeddings are proven incompatible and the minimal implementation is justified; no new service. Keep `resources.md` VideoDB-only and other references in `resources-local.md`.
 
 **Done** means user-verifiable clips, successful tested compatibility for selected model aliases, measurable usage and a written acceptance scorecard for both providers. A documented blocked route is not a passed route.
+
+## Execution gates and reporting
+
+Use `docs/IMPLEMENTATION-PLAN.md` in phase order and `docs/TEST-PLAN.md` for acceptance. Every model alias must be confirmed by a real synthetic smoke test, not `/models` listing alone. Native hybrid video embeddings are unverified until SentrySearch's actual `/embeddings` MP4 payload and text query succeed. When native video embeddings fail, **never** claim the frame-caption workaround is the same retrieval capability; it has distinct pass/partial/block status. The official VideoDB skill warns about partial analyzer polling; report analyzer statuses and bound retries. Keep private run manifests/evidence/cost reports under ignored `data/`.

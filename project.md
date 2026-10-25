@@ -1,5 +1,8 @@
 # PROJECT — Meeting Intelligence System
 
+**Implementation authority:** [Decision register](docs/DECISIONS.md), [Architecture](docs/ARCHITECTURE.md), [Implementation plan](docs/IMPLEMENTATION-PLAN.md), [Evidence contract](docs/DATA-CONTRACTS.md), [QA](docs/TEST-PLAN.md) and [security/costs](docs/SECURITY-AND-COSTS.md). Use the [tomorrow kickoff](docs/TOMORROW-CODEX-KICKOFF.md) for a new agent.
+
+
 ## Purpose
 
 Turn 40 pre-recorded Teams meetings (MP4 + transcript.txt) into searchable evidence about **what was said** and **what appeared on screen**. Extract verified decisions, visible errors, diagrams, interface states and timestamped source clips for human and agent workflows.

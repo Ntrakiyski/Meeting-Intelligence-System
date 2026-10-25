@@ -50,3 +50,7 @@ Recordings, transcripts, screenshots and private reports stay in the user's auth
 - Actual Azure deployment aliases, video embedding compatibility, VideoDB processing and full Windows test: **not verified from the GitHub documentation alone**.
 
 Before treating either provider as production-ready, run `docs/compare-backends.md` on the same authorized MP4 and inspect evidence timestamps.
+
+## Technical handoff for new implementation agents
+
+Begin with [Tomorrow's Codex Kickoff](TOMORROW-CODEX-KICKOFF.md), then [Implementation Plan](IMPLEMENTATION-PLAN.md). Other design docs are indexed in [../README.md](../README.md). Use the project master skill as an **operator interface after tools are configured**, not as proof that models and upstream connectors already work.

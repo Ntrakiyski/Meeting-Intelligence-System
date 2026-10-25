@@ -1,7 +1,15 @@
 {
   "input": {
-    "video_extensions": [".mp4", ".mov"],
-    "transcript_patterns": ["transcript.txt", "<video-stem>.txt", "<video-stem>.vtt", "<video-stem>.srt"],
+    "video_extensions": [
+      ".mp4",
+      ".mov"
+    ],
+    "transcript_patterns": [
+      "transcript.txt",
+      "<video-stem>.txt",
+      "<video-stem>.vtt",
+      "<video-stem>.srt"
+    ],
     "preserve_originals": true
   },
   "transcripts": {
@@ -37,7 +45,13 @@
     "alternative_engine": "sentrysearch",
     "alternative_embedding_backend": "litellm",
     "video_embedding_compatibility": "not_verified",
-    "video_embedding_required_for_full_visual_retrieval": true
+    "video_embedding_required_for_full_visual_retrieval": true,
+    "frame_caption_fallback": {
+      "allowed_when": "native_video_embedding_blocked",
+      "status": "reduced_fidelity",
+      "requires_explicit_external_media_approval": true,
+      "no_new_service": true
+    }
   },
   "text_retrieval": {
     "primary": "keyword",
@@ -51,5 +65,12 @@
   "experiments": {
     "process_entire_library": "disabled_until_one_recording_validated",
     "bypass_litellm": "disabled"
+  },
+  "testing": {
+    "initial_meeting_limit": 1,
+    "next_batch_limit": 5,
+    "acceptance_reference": "docs/TEST-PLAN.md",
+    "evidence_schema": "docs/DATA-CONTRACTS.md",
+    "gateway_contract": "docs/GATEWAY-CONTRACT.md"
   }
 }

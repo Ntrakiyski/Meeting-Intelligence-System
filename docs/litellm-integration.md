@@ -58,3 +58,7 @@ Values above are **placeholders**, not credentials or claims of an endpoint. Do 
 ## Provider-specific charges
 
 VideoDB credits apply to its service calls even when LiteLLM is the application's reasoning gateway. Azure/model charges apply to LiteLLM-proxied requests; self-hosting the proxy does not make provider inference free. Track both separately.
+
+## Authoritative testing instructions
+
+See [GATEWAY-CONTRACT.md](GATEWAY-CONTRACT.md) for model roles, PowerShell smoke commands, SentrySearch's actual `data:video/mp4;base64` proxy request, provider API mismatch, model/vector tests and success gates. The LiteLLM `--rerank` option is unsupported by SentrySearch's proxy backend. This file describes design intent; never consider the gateway verified until synthetic calls pass and costs are recorded.

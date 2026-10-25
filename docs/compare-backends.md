@@ -26,3 +26,7 @@ Both paths use **the same approved MP4 and existing transcript.txt**, both keep 
 6. Capture timings, embedding dims, exact models, API cost and authorized transfers in gitignored `data/`.
 
 No new service or forced adapter in MVP.
+
+## Detailed evaluation rubric
+
+Use [TEST-PLAN.md](TEST-PLAN.md) for definitive test IDs, [DATA-CONTRACTS.md](DATA-CONTRACTS.md) for normalized evidence, and [SECURITY-AND-COSTS.md](SECURITY-AND-COSTS.md) for accounting and egress. Distinguish **hybrid-native** (video embeddings passed SentrySearch/LiteLLM contract) from **hybrid-frame-fallback** (sampled screenshots/vision and text embedding). The latter can be useful but is not equivalent to native semantic video search.

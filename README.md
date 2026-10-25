@@ -1,5 +1,21 @@
 # Meeting Intelligence System
 
+**Tomorrow / new agent:** Start at [docs/TOMORROW-CODEX-KICKOFF.md](docs/TOMORROW-CODEX-KICKOFF.md). The canonical execution order is in [docs/IMPLEMENTATION-PLAN.md](docs/IMPLEMENTATION-PLAN.md); do not begin by coding a backend.
+
+### Build-ready technical specification
+
+- [Architecture](docs/ARCHITECTURE.md) — ownership, data flow, two provider boundaries
+- [Decisions / ADRs](docs/DECISIONS.md) — accepted decisions vs open questions
+- [Shared evidence contracts](docs/DATA-CONTRACTS.md) — normalized video-relative citations and run manifests
+- [LiteLLM gateway contract](docs/GATEWAY-CONTRACT.md) — exact video embedding compatibility gate
+- [Implementation plan](docs/IMPLEMENTATION-PLAN.md) — phases 0–4 and stop/go gates
+- [Test plan](docs/TEST-PLAN.md) — manual evidence, positive/negative and model tests
+- [Security and cost controls](docs/SECURITY-AND-COSTS.md) — consent, costs, logs, budgeting
+- [Upstream compatibility](docs/UPSTREAM-COMPATIBILITY.md) — latest known API pitfalls
+
+**Status: documentation and skills committed; neither provider has yet passed the end-to-end Windows recording test.**
+
+
 An agent-first system for 40 Microsoft Teams MP4 recordings with existing `transcript.txt` files. **No custom backend, UI, MCP server, or transcription service is required by default.**
 
 ## The two MVP choices
