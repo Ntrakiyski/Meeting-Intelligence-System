@@ -1,23 +1,25 @@
-# Local Open-source Video Intelligence Resources
+# Local and Optional External Embedding Resources
 
-Separated from `resources.md` (VideoDB-only references) as requested.
+VideoDB-owned references stay in [resources.md](resources.md). This file lists the non-VideoDB components.
 
-## Selected local MVP engine
+## Selected local visual engine (MVP)
 
-- **video-context-mcp** — https://github.com/smallthinkingmachines/video-context-mcp
-  - NPM package: https://www.npmjs.com/package/@smallthinkingmachines/video-context-mcp
-  - MIT license; Node 22+; Windows x64 documented as managed-runtime supported.
-  - MCP operations: ingest, status, timeline, transcript, semantic/full-text search, inspect keyframe, crop image.
-  - Local OCR and speech fallback; first run downloads/cache models/tools.
-  - Securely runs on local stdio; do not expose an unauthenticated server.
-  - Image interpretation by a cloud-based coding agent can still transfer selected frames out of local processing.
+- [SentrySearch](https://github.com/ssrajadh/sentrysearch) — Apache-2.0, Python, video chunk embeddings via local Qwen3-VL, CLI search and returned time-indexed clips, ChromaDB index; Windows supported. **It does not automatically ingest transcript.txt, transcribe speech, or OCR terminal text.** GPU practical; inspect hardware before indexing.
+- [Qwen3-VL Embedding models](https://github.com/QwenLM/Qwen3-VL-Embedding) — official multimodal video/image/text model and usage. Start with 2B if hardware permits.
+- [faster-whisper](https://github.com/SYSTRAN/faster-whisper) — **optional** timestamp generation/repair, CPU int8 base/tiny. Existing transcripts remain primary.
+- [Sentence Transformers](https://github.com/huggingface/sentence-transformers) — optional local embedding of text transcript chunks when keyword search is insufficient. [Multilingual MiniLM](https://huggingface.co/sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2) is a reasonable lightweight first trial.
+- [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) — optional exact text extraction from *selected* clear frames/terminal screenshots. Do not OCR all 40 videos automatically.
+- [FFmpeg](https://ffmpeg.org/) — extract video frames and inspect/trim clips when needed.
 
-## Evaluated alternatives (not installed by default)
+## Azure optional (CLOUD, not a local backend)
 
-- **VideoHighlighter** — https://github.com/Aseiel/VideoHighlighter — capable local Windows video analysis/highlights and CLIP search, but desktop-centric and AGPL-3.0; better for manual visual inspection than Codex MCP orchestration.
-- **TranscreveAI** — https://github.com/DeHor-Labs/transcreve-ai — Python CLI, MCP, local transcription/embeddings and OCR. Its documented local provider does **not** provide a local vision model, so not the primary screen-reasoning option.
-- **Multimodal Video RAG** — https://github.com/iisc-kc/Multimodal-Video-RAG — vision model + Whisper + OCR + retrieval; significantly heavier GPU/deployment footprint and limited production verification.
-- **MomentSearch** — https://github.com/traversaal-ai/momentsearch — visual-first RAG; defaults can require external Prefect/OpenAI services, even if local components exist.
-- **Cerul** — https://github.com/cerul-ai/cerul — capable CLI but current bundled binary supports Linux/macOS and documentation defaults to Gemini models.
+- [Microsoft Foundry Embedding Model Catalog](https://ai.azure.com/catalog/models?task=embeddings)
+- [Voyage Multimodal 3.5](https://ai.azure.com/catalog/models/voyage-multimodal-3.5?task=embeddings) — Azure endpoint with documented native **video** embedding API.
+- [Qwen3-VL-Embedding-2B Foundry listing](https://ai.azure.com/catalog/models/Qwen-Qwen3-VL-Embedding-2B?task=embeddings) — actual subscription access / deployment / SentrySearch compatibility requires test.
+- [Cohere Embed 4](https://ai.azure.com/catalog/models/embed-v-4-0?task=embeddings) — text+image screenshot embeddings, not a proven whole-video endpoint.
+- [Azure/OpenAI text embedding models](https://ai.azure.com/catalog/models?task=embeddings) — suitable for transcript text only.
 
-Pick a second local engine only after the MCP baseline shows an actual gap. Record why and ask before adding dependencies.
+## Not chosen
+
+- [video-context-mcp](https://github.com/smallthinkingmachines/video-context-mcp) — previous smaller local MCP proposal, now superseded as **primary local visual engine** by SentrySearch.
+- Other tiny-repo proof-of-concepts are not required for this MVP.

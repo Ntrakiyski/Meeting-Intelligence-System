@@ -1,23 +1,14 @@
 ---
 name: analyze-meeting
-description: Analyze an authorized meeting MP4 with the provider chosen in config/provider.json. Retrieve spoken and visual evidence with timestamps, using VideoDB or local video-context MCP.
+description: Analyze existing MP4 and transcript.txt pairs with the selected VideoDB or local SentrySearch provider; preserve screen and speech evidence.
 ---
 
-# Analyze Meeting — Provider Aware
+# Analyze Meeting — Dual-Provider
 
-## Inputs
-Authorized MP4 file in `recordings/`, user question, optional project label.
-
-## Select backend
-1. Read `config/provider.json` first. Allowed values: `videodb` or `local`.
-2. Do not switch provider without explicit user instruction. Do not upload files in local mode.
-3. Confirm privacy/consent and disclose if a cloud coding agent may receive a local frame.
-
-## VideoDB route
-Use official VideoDB skill/MCP or maintained Python SDK. Upload approved MP4, execute `spoken_words`, `vlm`, `ocr` understanding; index artifacts; query for grounded moments and clips. Confirm each analyzer status; record provider usage.
-
-## Local route
-Use installed `video-context-mcp` through the agent's MCP client. Invoke `ingest_video`, `get_ingest_status`, `get_video_timeline`, `get_transcript`, `search_videos`, `peek_frame` and optionally `crop_region`. Inspect retrieved frames for visually grounded findings (if image interpretation permitted); no VideoDB upload. Recognize that native local retrieval is not equivalent to automatically running a whole-video VLM analyzer.
-
-## Common deliverable
-Concise meeting summary; observed screen events; dialogue-specific points; explicit decisions vs proposals; open questions; action candidates. Every key claim includes video path/ID + timestamp and an inspectable frame/clip if available. Label **screen observation**, **speech**, **inference**, and **uncertain** separately. Save private report under `data/`; no external writes without approval.
+1. Read `AGENTS.md`, `config/provider.json` and `config/pipeline.json`.
+2. Pair MP4 with its **existing transcript.txt**. Detect timecodes. Do not replace transcript text or transcribe unnecessarily.
+3. If `videodb`: official skill/MCP/SDK, approve cloud upload first, run visual scene `vlm` and `ocr` analyses, index/query clips; reuse existing transcript for spoken knowledge. Document speech analyzer duplication if service requires it.
+4. If `local`: SentrySearch CLI local Qwen3-VL backend for video search; search original transcript text separately. Check GPU/VRAM first. SentrySearch has no built-in transcript importer/transcription/OCR.
+5. If transcript lacks timecodes, use optional `ensure-transcript-timestamps` skill **only when the question needs a precise spoken timestamp**.
+6. Inspect retrieved frame/clip before claiming screen details. Report: spoken points, visible evidence, explicit decisions, actions proposed, uncertainties, timestamped source references, and processing cost/runtime.
+7. Save sensitive reports under gitignored `data/`; no external actions without approval.

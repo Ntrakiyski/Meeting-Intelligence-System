@@ -1,35 +1,34 @@
-# Comparing VideoDB vs Local on the Same MP4
+# VideoDB Cloud vs SentrySearch Local — MVP Acceptance
 
-Run **each provider independently**, explicitly switching with `scripts/select-provider.ps1`. Do not automatically fall back or mix results while scoring.
+Both must process the **same approved MP4** with the **same original transcript.txt**. No fallback between providers. Compare results with source evidence.
 
-## Common questions
-
-1. What exact technical error, terminal command or configuration is **visible** but not spoken?
-2. What decision or explanation is present in **speech** but not screen text?
-3. What occurred on screen immediately before or after a named statement?
-4. Find one application setting or diagram and provide a source timestamp and inspectable image/clip.
-5. Identify one uncertain detail and state why it could not be established.
-
-## Scorecard (human verified)
-
-| Check | VideoDB | Local |
+| Metric | VideoDB (primary) | SentrySearch (local) |
 |---|---|---|
-| Installed and tool connected | Not tested | Not tested |
-| Speech available | Not tested | Not tested |
-| On-screen text available | Not tested | Not tested |
-| Visually meaningful frame/scene analysis | Not tested | Not tested |
-| Screen-only claim accurate | Not tested | Not tested |
-| Timestamp accurate | Not tested | Not tested |
-| Evidence can be manually inspected | Not tested | Not tested |
-| Citation correctness (0–5) | — | — |
-| Visual understanding (0–5) | — | — |
-| Transcript correctness (0–5) | — | — |
-| Total runtime | — | — |
-| Provider/API cost | — | $0 VideoDB API, local compute |
-| Data leaving PC | Video file to VideoDB | Possibly selected frames/text to cloud coding agent |
+| Connection/install | Unverified | Unverified |
+| MP4 + transcript paired | Unverified | Unverified |
+| Existing transcript reused | Unverified | Unverified |
+| Screen-only event found | Unverified | Unverified |
+| Speech-only evidence found | Unverified | Unverified |
+| Exact video seek timestamp | Unverified | Unverified |
+| Error/UI text legible | Unverified | Unverified |
+| Prompt/image and model privacy boundary disclosed | Unverified | Unverified |
+| Optional Whisper needed? | Undetermined | Undetermined |
+| Cost/credit delta | Not yet measured | No VideoDB API fee; hardware/model costs possible |
+| GPU/preflight | Not required locally | Required for performant local Qwen |
+| Processing time | Not yet measured | Not yet measured |
 
-Save filled results to `data/comparison.md` (ignored by Git). Record upstream tool version, local GPU/RAM, video duration and test timestamp. In local mode, image-keyframe inspection by a cloud AI agent is **not** the same as offline VLM inference.
+### Mandatory questions
 
-## Decision
+1. Find a terminal error or configuration visible but never spoken about; show the exact clip/frame.
+2. Identify an explicitly approved decision in speech; distinguish from proposal.
+3. What was visible immediately when the participant mentioned a particular component?
+4. Provide one thing you **cannot** read confidently on screen.
+5. Report transcript timestamp format and whether alignment was needed.
 
-Choose the provider based on **actual visual quality, confidentiality requirements, runtime and recurring costs**, not advertised repo features.
+### Validation and rollout
+
+- Run on **one** recording, check manually, then 5, then potentially all 40.
+- Record original MP4 seconds, transcript source line/offset, embedding engine/model, provider mode, any OCR usage and evidence preview.
+- VideoDB cost: actual credit balance before/after; local cost: installation/model download size, CPU/GPU/VRAM, elapsed time, and any cloud inference.
+- Save completed scorecard at `data/compare-backends.md` (ignored by Git).
+- **Both paths are documented but not yet executed on user's Windows machine.** If local GPU is inadequate, local video retrieval fails its acceptance criterion until a viable alternative exists.

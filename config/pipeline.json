@@ -1,0 +1,37 @@
+{
+  "input": {
+    "video_extensions": [".mp4", ".mov"],
+    "transcript_patterns": ["transcript.txt", "<video-stem>.txt", "<video-stem>.vtt", "<video-stem>.srt"],
+    "preserve_originals": true
+  },
+  "transcripts": {
+    "policy": "prefer_existing",
+    "timestamp_detection": "auto",
+    "whisper": {
+      "enabled": "on_demand",
+      "engine": "faster-whisper",
+      "model": "base",
+      "device": "cpu",
+      "compute_type": "int8",
+      "word_timestamps": true,
+      "never_replace_original": true
+    }
+  },
+  "video": {
+    "cloud_provider": "videodb",
+    "local_engine": "sentrysearch",
+    "local_embedding_backend": "local",
+    "local_embedding_model": "qwen2b",
+    "local_requires_hardware_preflight": true
+  },
+  "text_retrieval": {
+    "primary": "keyword",
+    "optional_local_embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+    "optional_azure_embedding": "text-embedding-3-small"
+  },
+  "experiments": {
+    "azure_foundry_multimodal": "disabled_until_deployment_and_privacy_confirmed",
+    "lite_llm": "optional_not_required",
+    "processing_entire_library": "disabled_until_one_recording_validated"
+  }
+}

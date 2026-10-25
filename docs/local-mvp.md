@@ -1,63 +1,61 @@
-# Windows MVP — Local Engine (video-context-mcp)
+# Windows Local MVP — SentrySearch + Existing Transcripts
 
-## Goal
+## Scope
 
-Enable screen- and speech-aware search over `recordings/test.mp4` **without using VideoDB credits**. Use existing `video-context-mcp` rather than writing our own ingestion/indexing service.
+Visual search = [SentrySearch](https://github.com/ssrajadh/sentrysearch), local Qwen3-VL embeddings. Text search = existing transcript.txt files (keyword first). Optional faster-whisper only if timestamps are missing and required. There is **no video-context-mcp dependency** and no custom application required.
 
-## Requirements
-
-- Windows x64, Node.js **22 or newer**, Git and a Codex/Copilot agent that supports MCP tools.
-- Space for downloaded runtime binaries, local model weights, keyframes, OCR and indexes.
-- Internet only for initial downloading/setup. The MCP media/OCR/ASR/search pipeline runs locally, but a cloud-based coding agent can transmit retrieved frames/text to its model.
-- Approved video recording (do not submit confidential footage to cloud AI reasoning without permission).
-
-## One-time setup (PowerShell)
+**Limit:** 24 GB system RAM reported. Before installing Qwen, establish GPU/VRAM (cannot infer from system RAM):
 
 ```powershell
-npm install -g @smallthinkingmachines/video-context-mcp
-video-context-mcp setup --all
-video-context-mcp doctor --json
+nvidia-smi --query-gpu=name,memory.total --format=csv
 ```
 
-Read official setup: https://github.com/smallthinkingmachines/video-context-mcp
+If `nvidia-smi` is absent, ask Codex to inspect `Get-CimInstance Win32_VideoController | Select-Object Name`. CPU-only Qwen is documented as very slow; do not promise successful visual embedding indexing on CPU. In that situation, local keyword search + inspected screenshots is a **limited fallback**, not proof of full local video-search parity.
 
-Register the installed executable in your MCP client. Codex user config, usually `$HOME/.codex/config.toml`:
+## Pilot setup (only after preflight)
 
-```toml
-[mcp_servers.video-context]
-command = "video-context-mcp"
+Follow [upstream Windows install instructions](https://github.com/ssrajadh/sentrysearch). From a *separate checkout* of SentrySearch, Python 3.11/3.12 and uv:
+
+```powershell
+uv python install 3.12
+git clone https://github.com/ssrajadh/sentrysearch.git
+cd sentrysearch
+# Use CUDA quantization when NVIDIA VRAM is sufficient:
+uv tool install --python 3.12 ".[local-quantized]"
 ```
 
-If Codex cannot find the executable, inspect `where.exe video-context-mcp` and use its full installation path in `command`. Restart Codex after editing its MCP configuration. The MCP registration is external to this repo and must be checked on the actual Windows machine.
+Use local `qwen2b` first where appropriate and ensure the local tool can read the user's approved MP4. SentrySearch accepts a folder path for indexing. Test one **small isolated folder** (not all 40 recordings). The `--no-skip-still` flag matters for screen-sharing where dashboards remain static.
 
-## Switch and run
+```powershell
+sentrysearch index "C:\path\to\one-approved-meeting" --backend local --model qwen2b --no-skip-still
+sentrysearch search "Kubernetes terminal error shown on screen" --results 5 --no-trim
+```
+
+Upstream CLI should be inspected before use because dependency/flag behavior can change. On-screen small text may require retrieving full-resolution frames and optional OCR. The local model may be impractical on underpowered GPUs; stop/record failure instead of silently using Gemini or another hosted backend.
+
+## Existing transcript handling
+
+Use `transcript.txt` directly. Agent may use keyword/text search tools first (`rg` or PowerShell `Select-String`) without embedding. SentrySearch does **not** directly ingest transcripts. If transcripts have timestamps, map speech to original MP4. If they lack timestamps and a speech timestamp is required, see `docs/transcript-timestamps.md`.
+
+## Run
 
 ```powershell
 .\scripts\select-provider.ps1 -Provider local
 ```
 
-Tell the agent:
+Agent prompt:
 
-> Read AGENTS.md and skills/analyze-meeting/SKILL.md. My current provider is local. Use video-context MCP on recordings/test.mp4. Invoke `ingest_video` with the local file, check `get_ingest_status`, then use `get_video_timeline`, `search_videos`, `get_transcript`, `peek_frame` and `crop_region` where needed. Find visible errors/settings/diagrams not spoken aloud, and return exact file timestamps. Never invoke VideoDB, external video ingestion, or pretend unsupported VLM analysis happened.
+> Read AGENTS.md, config/pipeline.json, docs/local-mvp.md and skills/analyze-meeting/SKILL.md. Verify GPU hardware. For ONE meeting, keep transcript.txt as primary speech source. Use local SentrySearch video retrieval (if hardware permits) to find a **screen-only** fact and return exact seekable clip times. No VideoDB, Gemini, Azure or other cloud ingestion. Optional Whisper only if genuinely needed for missing timestamps. Report incomplete capabilities; do not claim full visual understanding from transcript.
 
-## Expectations
+## Validation
 
-- Processing outputs: transcript, keyframes, on-screen text, timeline, local index with semantic and keyword search.
-- An image-capable agent may review returned keyframes and describe them. The MCP tool itself does not guarantee autonomous whole-video VLM reasoning.
-- A local video path remains local to MCP. If Codex is cloud-powered, *retrieved images and text used in its answer may be transmitted to the agent provider*.
-- The MCP has local cache management tools; inspect `list_videos` and do not delete caches by default.
+- [ ] Correct MP4/transcript pairing confirmed
+- [ ] GPU/VRAM checked and Qwen local install tested or limitation recorded
+- [ ] Local visual index/search ran (or failure documented)
+- [ ] At least one seen-but-not-said fact grounded in video clip
+- [ ] Original transcript preserved; optional timing sidecar separate
+- [ ] No VideoDB credits consumed; no cloud video embedding used
+- [ ] Any clips/frames shown to a cloud coding agent explicitly disclosed
+- [ ] Results under `data/local-validation.md` (gitignored)
 
-## Acceptance tests
-
-- [ ] `video-context-mcp doctor --json` reports healthy runtime.
-- [ ] MCP appears in the agent tools and `ingest_video` accepts a local MP4.
-- [ ] Status shows transcript and keyframes/OCR availability; failures are reported.
-- [ ] Search retrieves at least one technical screen event with inspectable frame/time.
-- [ ] Agent can read/crop relevant screen details accurately; fails honestly for blurry evidence.
-- [ ] No VideoDB credit was consumed; no cloud media upload occurred.
-- [ ] Any images/text shown to the cloud coding agent are disclosed.
-- [ ] Result and timings documented under gitignored `data/local-validation.md`.
-
-## Troubleshooting
-
-Run `video-context-mcp doctor --json`; consult the upstream README. If embeddings fail, full-text retrieval may still work; use `repair_embeddings` rather than re-ingesting. Document feature status rather than claiming full success.
+If CPU-only hardware blocks native video embeddings, compare with VideoDB Cloud first, then decide on a managed Azure hybrid experiment (see `docs/azure-foundry.md`) rather than building a bespoke stack.
