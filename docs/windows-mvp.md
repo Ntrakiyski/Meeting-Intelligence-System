@@ -1,12 +1,12 @@
-# Windows MVP — Primary VideoDB Cloud
+# Windows MVP — VideoDB Primary, LiteLLM Supplemental Inference
 
-1. Place one authorized MP4 and its existing transcript.txt together (or record explicit matching paths). Never commit source files.
-2. Run `.\scripts\select-provider.ps1 -Provider videodb`.
-3. Install the maintained [VideoDB skill](https://github.com/video-db/skills): `npx skills add video-db/skills`. Authenticate safely through the skill / supported MCP.
-4. Record current VideoDB trial balance. Confirm permission to upload this MP4.
-5. Process video using VideoDB's `vlm` scene and `ocr` analyzers and create indexes for timestamped retrieval. Prefer the original transcript.txt as text evidence; if VideoDB requires its own `spoken_words` index for full search, record that duplication, cost and differences rather than masking them.
-6. Find one **visual-only** technical detail and one **speech-only** decision; cite actual clip timestamps and inspect visible frames. If transcript timestamps missing, either mark approximate context or invoke optional `faster-whisper` alignment as in `docs/transcript-timestamps.md`.
-7. Save locally in `data/videodb-validation.md`: tested clip, provider usage delta, verified evidence, analyzer status, uncertainty and limitations.
-8. Repeat exactly the same pilot in local mode for `docs/compare-backends.md`.
+1. Pair one **approved** MP4 and its existing transcript.txt, inspect timecodes.
+2. Select `videodb` with `.\scripts\select-provider.ps1 -Provider videodb`.
+3. Set up official VideoDB skill/MCP/SDK, using the existing account and API key securely.
+4. Record VideoDB credit balance before processing. Get approval for uploading MP4 to VideoDB.
+5. Use VideoDB managed `vlm` scenes, OCR and timestamped retrieval; let its pipeline use its own internal analyzers as needed. Existing transcripts remain primary for our reasoning workflow, but VideoDB may still require its speech analyzer for native indexing.
+6. Route any **application-controlled** text/image summaries, meeting decisions, optional transcript embeddings, and custom agent reasoning through user's self-hosted LiteLLM aliases. Do not claim VideoDB's internal analyzers route through LiteLLM.
+7. Verify screen-only vs speech-only facts from the original video, then record VideoDB credits plus LiteLLM/Azure spend as separate line items.
+8. Run the same test in hybrid mode if Azure video embedding compatibility is verified; otherwise record hybrid blocker.
 
-Do not claim using an existing transcript means VideoDB can skip speech costs in every API workflow — verify actual SDK capabilities and usage.
+See `docs/litellm-integration.md` and `docs/compare-backends.md`.

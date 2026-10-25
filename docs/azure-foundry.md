@@ -1,39 +1,34 @@
-# Microsoft Foundry — Optional Embedding Experiments
+# Azure Foundry deployments for Meeting Intelligence via LiteLLM
 
-**Scope:** research/optional cloud-hosted embedding models. Does not replace primary VideoDB. Does not run in strict local/offline provider mode without explicit user approval.
+**Architectural decision:** The user will connect Azure Foundry into an existing self-hosted LiteLLM proxy. All **application-controlled** model calls route through LiteLLM; no direct Azure SDK/model calls from app workflows. Deployment availability/region/quota and specific endpoint compatibility are not yet verified.
 
-## Verified public catalog
+## Model mapping (proposed)
 
-| Model | Modality | Intended meeting use | Compatibility status |
+| Function | Foundry model candidate | LiteLLM alias (proposed) | Verified? |
 |---|---|---|---|
-| `text-embedding-3-small` | Text | Existing transcript semantics | General Azure OpenAI deployment; not SentrySearch video-compatible |
-| `text-embedding-3-large` | Text | Higher-recall transcript search | Same |
-| `text-embedding-ada-002` | Text | Reuse existing deployment if present | Older, text only |
-| `Cohere Embed 4` / `embed-v-4-0` | Text + images | Slide and frame screenshot search | Not native video ingestion |
-| `Qwen-Qwen3-VL-Embedding-2B` | Model family accepts text/image/video | Hosted analog to local Qwen video search | Listed in Foundry; tenant deployment and endpoint support unverified |
-| `voyage-multimodal-3.5` | Text + images + **video** | Video clip and transcript multimodal vectors | Foundry page explicitly documents a `/v1/multimodalembeddings` endpoint; deployment status unverified |
+| Decisions/summaries | Azure-hosted chat/reasoning model chosen by user | `meeting-reasoning` | No |
+| Screenshots/diagrams | Azure-hosted vision-capable chat model | `meeting-vision` | No |
+| Transcript embeddings | `text-embedding-3-small` or existing `text-embedding-ada-002` | `meeting-text-embedding` | No |
+| Full video embeddings | `voyage-multimodal-3.5` or deployable `Qwen3-VL-Embedding-2B` | `meeting-video-embedding` | **Compatibility blocked pending test** |
 
-## How to verify in user's Azure account
+## Protocol issues
 
-1. Sign in to [Microsoft Foundry](https://ai.azure.com).
-2. Open the project -> **Models / Model catalog** and filter **Embeddings**.
-3. Inspect `Qwen-Qwen3-VL-Embedding-2B` and `voyage-multimodal-3.5` model details.
-4. For each: check whether **Deploy** is enabled in subscription/region, and whether it is pay-per-token or managed-compute (potentially requiring a provisioned GPU endpoint).
-5. Check deployment health, permissions, quotas, actual endpoint API and pricing before any footage transfer.
-6. Test synthetic screenshot/video chunk + short text query; check shape and retrieval output.
-7. Use the deployment only after explicit privacy approval. Avoid touching the real 40 recordings in discovery.
+Voyage's Foundry model page documents `/v1/multimodalembeddings`, not standard OpenAI `/embeddings`. SentrySearch's LiteLLM backend sends video as `data:video/mp4;base64` via `/embeddings`. LiteLLM's standard embeddings endpoint supports text-oriented OpenAI-compatible formats; do **not** assume that gateway routing handles Voyage's video contract. Check explicit LiteLLM/provider support and validate synthetic video retrieval.
 
-**No account-specific Azure portal access is available to this documentation update; catalog presence != entitlement/deployment.**
+Qwen catalog presence does not prove access to a deployment, video endpoint, or LiteLLM route. The gateway or provider may need an adapter; this must be documented and separately approved instead of invented.
 
-## LiteLLM nuance
+Text embeddings are not video embeddings. Models must produce compatible vectors for query and index on a stable alias. Do not configure alternate-model fallback for any embedding alias.
 
-SentrySearch supports a `litellm` backend for **video-capable embedding** models served through a compatible gateway. Its README reports Gemini Embedding 2 tested; alternative models need verification and might require adapters. Standard Azure OpenAI text embedding routes through LiteLLM are not substitutes for video embedding. Do not mix vectors or use embedding fallback to a different model.
+## Admin checklist
 
-## References
+- User connects available Foundry deployments to LiteLLM (secure gateway-only provider keys).
+- Inspect proxy `/models`, deployment region, access and model pricing.
+- Verify tiny **synthetic** text embedding, image-chat, and video-embedding calls as described in `docs/litellm-integration.md`.
+- Record supported modality, dimensions, endpoint, input limits and cost before processing confidential media.
+- Disclose Azure as the remote inference destination even when SentrySearch indexes remain local.
 
-- Catalog: https://ai.azure.com/catalog/models?task=embeddings
-- Voyage native video API: https://ai.azure.com/catalog/models/voyage-multimodal-3.5?task=embeddings
-- Qwen2B listing: https://ai.azure.com/catalog/models/Qwen-Qwen3-VL-Embedding-2B?task=embeddings
-- Cohere Embed 4: https://ai.azure.com/catalog/models/embed-v-4-0?task=embeddings
-- Microsoft managed compute overview: https://learn.microsoft.com/en-us/azure/foundry/concepts/managed-compute-overview
-- SentrySearch LiteLLM support: https://github.com/ssrajadh/sentrysearch
+Sources:
+- https://ai.azure.com/catalog/models/voyage-multimodal-3.5
+- https://ai.azure.com/catalog/models?task=embeddings
+- https://github.com/ssrajadh/sentrysearch
+- https://docs.litellm.ai/api-reference

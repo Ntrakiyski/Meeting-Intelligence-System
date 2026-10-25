@@ -1,14 +1,13 @@
 ---
 name: select-provider
-description: Switch Meeting Intelligence System between VideoDB Cloud and local SentrySearch visual retrieval; keep existing transcripts and optional Whisper policy.
+description: Select VideoDB Cloud primary or LiteLLM/Azure Foundry hybrid; model gateway is the user's existing self-hosted LiteLLM.
 ---
 
 # Select Provider
 
-Use `scripts/select-provider.ps1 -Provider videodb|local` to set `config/provider.json`. Follow `config/pipeline.json` and `AGENTS.md`.
+Run `scripts/select-provider.ps1 -Provider videodb|hybrid`. Legacy `local` maps to `hybrid` with a warning.
 
-- `videodb` — **primary**: VideoDB native skill/MCP/SDK; approved MP4 uploaded/processed by VideoDB, billed against usage credit.
-- `local` — **alternative**: SentrySearch CLI with native local Qwen3-VL embedding for video clips; no VideoDB charges. Needs hardware preflight (24 GB **RAM**, GPU VRAM unknown). Transcript.txt is searched separately.
-- Lightweight `faster-whisper` is optional/on-demand only for missing transcript timecodes or transcription gaps.
-- Azure Foundry multimodal embeddings (Voyage/Qwen) are optional **cloud** experiments outside strict local mode, require user approval and real deployment verification.
-- Never automatically switch providers or claim both passed acceptance without processing and checking the same video locally.
+- `videodb`: VideoDB's cloud analyzer and indexes; our app-controlled LLM and embedding tasks use LiteLLM.
+- `hybrid`: Windows MP4/index + SentrySearch CLI; model embeddings and image/reasoning via LiteLLM -> Azure Foundry. **Not fully offline**; video embeddings require compatibility check.
+- Use existing transcript.txt and optional/on-demand lightweight Whisper.
+- Never silently fall back, reindex all 40 files, change embedding model on existing index, or upload unapproved client media.

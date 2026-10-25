@@ -1,14 +1,12 @@
 ---
 name: analyze-meeting
-description: Analyze existing MP4 and transcript.txt pairs with the selected VideoDB or local SentrySearch provider; preserve screen and speech evidence.
+description: Analyze an existing MP4/transcript pair via VideoDB primary or LiteLLM/Azure hybrid, with verifiable seen-versus-said evidence.
 ---
 
-# Analyze Meeting — Dual-Provider
+# Analyze Meeting
 
-1. Read `AGENTS.md`, `config/provider.json` and `config/pipeline.json`.
-2. Pair MP4 with its **existing transcript.txt**. Detect timecodes. Do not replace transcript text or transcribe unnecessarily.
-3. If `videodb`: official skill/MCP/SDK, approve cloud upload first, run visual scene `vlm` and `ocr` analyses, index/query clips; reuse existing transcript for spoken knowledge. Document speech analyzer duplication if service requires it.
-4. If `local`: SentrySearch CLI local Qwen3-VL backend for video search; search original transcript text separately. Check GPU/VRAM first. SentrySearch has no built-in transcript importer/transcription/OCR.
-5. If transcript lacks timecodes, use optional `ensure-transcript-timestamps` skill **only when the question needs a precise spoken timestamp**.
-6. Inspect retrieved frame/clip before claiming screen details. Report: spoken points, visible evidence, explicit decisions, actions proposed, uncertainties, timestamped source references, and processing cost/runtime.
-7. Save sensitive reports under gitignored `data/`; no external actions without approval.
+Read `AGENTS.md`, provider selection, gateway configuration and provider-specific guide. Reuse `transcript.txt`; optional Whisper only if timestamps genuinely needed and absent.
+
+- `videodb`: use official VideoDB skill/MCP/SDK for managed `vlm` scene understanding and OCR; user approves cloud upload. For **our** supplemental summarization/decisions/image analysis, use validated LiteLLM model aliases. VideoDB native analyzers do not become LiteLLM calls.
+- `hybrid`: local SentrySearch and existing transcript search. **Before indexing MP4**, prove gateway `meeting-video-embedding` alias accepts MP4 base64 via SentrySearch's LiteLLM endpoint and text queries; if unsupported, clearly report blocked. Reasoning/image inspection only via validated LiteLLM aliases. Do not run local Qwen by default, call Azure directly, or present frame-based exploratory inspection as a full video index.
+- Return screen-only finding, speech-only decision, timestamp/media clip, separated observed facts/interpretation/uncertainties, and usage. Save private reports only under gitignored `data/`. No external writes without user approval.

@@ -17,21 +17,39 @@
       "never_replace_original": true
     }
   },
+  "model_gateway": {
+    "type": "existing_self_hosted_litellm",
+    "url_env": "LITELLM_PROXY_API_BASE",
+    "key_env": "LITELLM_PROXY_API_KEY",
+    "models": {
+      "reasoning": "meeting-reasoning",
+      "vision": "meeting-vision",
+      "text_embedding": "meeting-text-embedding",
+      "video_embedding": "meeting-video-embedding"
+    },
+    "aliases_are_examples_not_verified": true,
+    "enforce_stable_embedding_model": true,
+    "disable_embedding_fallback_between_models": true
+  },
   "video": {
-    "cloud_provider": "videodb",
-    "local_engine": "sentrysearch",
-    "local_embedding_backend": "local",
-    "local_embedding_model": "qwen2b",
-    "local_requires_hardware_preflight": true
+    "primary_provider": "videodb",
+    "alternative_provider": "hybrid",
+    "alternative_engine": "sentrysearch",
+    "alternative_embedding_backend": "litellm",
+    "video_embedding_compatibility": "not_verified",
+    "video_embedding_required_for_full_visual_retrieval": true
   },
   "text_retrieval": {
     "primary": "keyword",
-    "optional_local_embedding_model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
-    "optional_azure_embedding": "text-embedding-3-small"
+    "semantic_via_gateway": "optional_after_validation"
+  },
+  "privacy": {
+    "azure_inference_is_remote": true,
+    "source_video_upload_requires_approval": true,
+    "no_public_repo_media_or_secrets": true
   },
   "experiments": {
-    "azure_foundry_multimodal": "disabled_until_deployment_and_privacy_confirmed",
-    "lite_llm": "optional_not_required",
-    "processing_entire_library": "disabled_until_one_recording_validated"
+    "process_entire_library": "disabled_until_one_recording_validated",
+    "bypass_litellm": "disabled"
   }
 }

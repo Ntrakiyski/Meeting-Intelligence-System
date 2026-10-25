@@ -1,41 +1,25 @@
-# Embeddings for 40 Teams MP4 + transcript.txt files
+# Meeting embeddings — via self-hosted LiteLLM
 
-## First principle: text embeddings != video embeddings
+## A single gateway for our model calls
 
-- **Transcript text** can be searched with plain keyword search. Embeddings are optional for semantic meaning and synonyms.
-- **Screens/whole clips** require a multimodal image/video embedding model. An OpenAI `text-embedding-3-small`, `text-embedding-3-large` or `text-embedding-ada-002` model does *not* accept video or image input.
-- SentrySearch's visual pipeline is built for compatible Gemini Embedding 2, local Qwen3-VL-Embedding, Qwen Cloud and selected LiteLLM-proxied **video-capable** models; arbitrary text-only embedding models are not drop-in replacements.
-- A model used for document vectors and a model used for queries must be compatible. Never mix unrelated embedding vector spaces.
+- All **custom application** embeddings and reasoning use the user's LiteLLM proxy, which they will connect to Azure AI Foundry.
+- **VideoDB remains separate** for its managed indexing/understanding; its internal analysis cannot be assumed to use LiteLLM.
+- Our four proposed (not yet active) aliases are `meeting-reasoning`, `meeting-vision`, `meeting-text-embedding`, `meeting-video-embedding`.
 
-## Transcript search choices
+## Important modality difference
 
-**MVP stage 1:** search existing transcript.txt files with rg/grep, inspect timestamps if present. Zero new embedding service or indexing infrastructure.
+1. Existing `transcript.txt`: full-text/keyword search first (zero embeddings needed). Optionally use Azure OpenAI text embeddings through LiteLLM for semantic matching.
+2. MP4 or actual video chunks: **multimodal video embeddings** required for SentrySearch native video search; text-only OpenAI embeddings do not work.
+3. Screen-readable small text: selected full-resolution frames and an image-capable model via LiteLLM, optional OCR. Video embeddings may locate a scene but do not guarantee accurate on-screen lettering.
+4. Optional `faster-whisper` (local, CPU int8) aligns missing transcript timestamps; not itself an embedding model.
 
-**Optional local stage 2:** `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (text-only, 384-dimensional, 50+ languages) for semantic search. On a 24 GB RAM PC, memory is normally much less demanding than Qwen video embeddings; benchmark CPU speed. `BAAI/bge-m3` is a stronger/larger local alternative if justified.
+## Candidate Azure models
 
-**Optional hosted Azure text embedding:** `text-embedding-3-small` economical; `text-embedding-3-large` stronger; existing `text-embedding-ada-002` deployment can be reused but is older. They index transcript chunks, not MP4/video frames. Azure Foundry model availability does not mean you have an active deployment or free use.
+- `text-embedding-3-small`: transcript chunks (text only).
+- `voyage-multimodal-3.5`: documented native video embeddings via Foundry, but endpoint uses `/v1/multimodalembeddings`, **not proven compatible** with SentrySearch LiteLLM's `/embeddings` video body.
+- `Qwen3-VL-Embedding-2B`: multimodal model family, Foundry catalog option; deployment access and endpoint require verification.
+- Reasoning and vision: user's available Azure-chat deployments behind LiteLLM, selected based on actual image capability.
 
-## Screen/video search choices
+## Isolation and testing
 
-**Local main candidate:** SentrySearch with local `Qwen3-VL-Embedding-2B`. Native video clips are vectorized; text description queries can retrieve matching scenes. Qwen can also embed text/images/video in shared space.
-
-**Hardware prerequisite:** system RAM = 24 GB; **GPU VRAM is not known**. Run `nvidia-smi --query-gpu=name,memory.total --format=csv` (if NVIDIA) before installing heavy models. NVIDIA CUDA with adequate VRAM is desirable. CPU fallback is documented but may be impractically slow. Do not promise 2B runs well solely from RAM.
-
-**Azure candidate:** `voyage-multimodal-3.5` has a documented video embedding endpoint in Foundry. `Qwen-Qwen3-VL-Embedding-2B` appears in the catalog. Neither is a guaranteed drop-in replacement for SentrySearch's built-in backends. Test endpoint schema, batching, input constraints, billing, vector dimensions, query/document embedding consistency and index isolation **before** any adapter development.
-
-**Screenshot-only Azure candidate:** Cohere Embed 4 text/image, useful for indexing sampled frames but not claimed to handle MP4 directly.
-
-## Next-step decision gates
-
-1. Do we need semantic transcript matching? If keyword search works, no text embedding.
-2. Do we need screen-only discovery? Then video embeddings (local Qwen or managed VideoDB); avoid reliance on transcript keywords.
-3. Is Windows GPU adequate? If not, keep VideoDB as working MVP provider and evaluate an explicitly approved Azure-hosted embedding experiment; do not label it local/offline.
-4. Do we need exact screen strings? Inspect original-resolution frames; optional Tesseract OCR. Video embeddings alone do not faithfully recover small terminal text.
-
-## External references
-
-- OpenAI text embedding models: https://developers.openai.com/api/docs/models/text-embedding-3-small
-- Microsoft Foundry catalog: https://ai.azure.com/catalog/models?task=embeddings
-- Voyage video endpoint: https://ai.azure.com/catalog/models/voyage-multimodal-3.5?task=embeddings
-- Qwen multimodal video embeddings: https://huggingface.co/Qwen/Qwen3-VL-Embedding-2B
-- SentrySearch supported backends: https://github.com/ssrajadh/sentrysearch
+Video clips and text queries must use same video embedding model/vector space. Do not silently route embedding models through a fallback. First check `docs/litellm-integration.md` with synthetic video and text; only index MP4s after successful retrieval and approval. For failed video embedding, manually inspected frames + LiteLLM vision are a limited pilot, *not* complete semantic video search.

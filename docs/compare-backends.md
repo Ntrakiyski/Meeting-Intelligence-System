@@ -1,34 +1,28 @@
-# VideoDB Cloud vs SentrySearch Local — MVP Acceptance
+# Compare VideoDB Cloud vs LiteLLM + Azure hybrid
 
-Both must process the **same approved MP4** with the **same original transcript.txt**. No fallback between providers. Compare results with source evidence.
+Both paths use **the same approved MP4 and existing transcript.txt**, both keep timestamps and report evidence. Each is tested independently.
 
-| Metric | VideoDB (primary) | SentrySearch (local) |
+| Metric | VideoDB primary | SentrySearch / LiteLLM / Azure hybrid |
 |---|---|---|
-| Connection/install | Unverified | Unverified |
-| MP4 + transcript paired | Unverified | Unverified |
-| Existing transcript reused | Unverified | Unverified |
-| Screen-only event found | Unverified | Unverified |
-| Speech-only evidence found | Unverified | Unverified |
-| Exact video seek timestamp | Unverified | Unverified |
-| Error/UI text legible | Unverified | Unverified |
-| Prompt/image and model privacy boundary disclosed | Unverified | Unverified |
-| Optional Whisper needed? | Undetermined | Undetermined |
-| Cost/credit delta | Not yet measured | No VideoDB API fee; hardware/model costs possible |
-| GPU/preflight | Not required locally | Required for performant local Qwen |
-| Processing time | Not yet measured | Not yet measured |
+| Video indexing backend | VideoDB Cloud | Local SentrySearch/ChromaDB |
+| Model path we control | LiteLLM | LiteLLM → Azure Foundry |
+| Internal provider models | VideoDB managed | Needs verified multimodal video embedding route |
+| Video embedding compatibility | Managed by VideoDB | **Unverified: /embeddings vs /multimodalembeddings** |
+| Existing transcript preserved | Untested | Untested |
+| Screen-only finding at correct timestamp | Untested | Untested |
+| Speech-only decision at correct timestamp | Untested | Untested |
+| Full-resolution visual text inspection | Untested | Untested |
+| Real cost | VideoDB credits + optional Azure | Azure model charges + local storage/index |
+| Media transferred outside Windows | Approved video → VideoDB | Video chunks/screens → Azure through LiteLLM |
+| Optional Whisper | On-demand | On-demand |
 
-### Mandatory questions
+## Gate order
 
-1. Find a terminal error or configuration visible but never spoken about; show the exact clip/frame.
-2. Identify an explicitly approved decision in speech; distinguish from proposal.
-3. What was visible immediately when the participant mentioned a particular component?
-4. Provide one thing you **cannot** read confidently on screen.
-5. Report transcript timestamp format and whether alignment was needed.
+1. Confirm LiteLLM aliases `meeting-reasoning`, `meeting-vision` and optional `meeting-text-embedding` via synthetic calls.
+2. Verify `meeting-video-embedding` using SentrySearch-compatible base64 MP4 via LiteLLM. **Do not claim route supported until tested.**
+3. Run one approved meeting in VideoDB; verify visual-only finding, citation and credits.
+4. If step 2 passed, run same meeting via SentrySearch hybrid; compare returned clips.
+5. If step 2 failed, record hybrid video retrieval **blocked**, optionally test manually extracted frames via LiteLLM vision without claiming parity.
+6. Capture timings, embedding dims, exact models, API cost and authorized transfers in gitignored `data/`.
 
-### Validation and rollout
-
-- Run on **one** recording, check manually, then 5, then potentially all 40.
-- Record original MP4 seconds, transcript source line/offset, embedding engine/model, provider mode, any OCR usage and evidence preview.
-- VideoDB cost: actual credit balance before/after; local cost: installation/model download size, CPU/GPU/VRAM, elapsed time, and any cloud inference.
-- Save completed scorecard at `data/compare-backends.md` (ignored by Git).
-- **Both paths are documented but not yet executed on user's Windows machine.** If local GPU is inadequate, local video retrieval fails its acceptance criterion until a viable alternative exists.
+No new service or forced adapter in MVP.

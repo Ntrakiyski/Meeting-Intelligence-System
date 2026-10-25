@@ -1,61 +1,46 @@
-# Windows Local MVP — SentrySearch + Existing Transcripts
+# Windows MVP — Hybrid SentrySearch + LiteLLM + Azure Foundry
 
-## Scope
+**Historical filename**: `local-mvp.md`. This option is now `hybrid`, not offline inference.
 
-Visual search = [SentrySearch](https://github.com/ssrajadh/sentrysearch), local Qwen3-VL embeddings. Text search = existing transcript.txt files (keyword first). Optional faster-whisper only if timestamps are missing and required. There is **no video-context-mcp dependency** and no custom application required.
+## Processing boundary
 
-**Limit:** 24 GB system RAM reported. Before installing Qwen, establish GPU/VRAM (cannot infer from system RAM):
+Windows: the original 40 MP4/transcript.txt files, SentrySearch CLI, ChromaDB indexes, selected image/clip files. Existing **self-hosted LiteLLM**: all application-driven models. **Azure AI Foundry**: the provider behind the LiteLLM deployment for embeddings and optionally vision/reasoning.
 
-```powershell
-nvidia-smi --query-gpu=name,memory.total --format=csv
-```
+No Qwen local GPU inference is required by this design; the 24 GB system RAM limitation is much less important than upload bandwidth, video model limits and provider costs.
 
-If `nvidia-smi` is absent, ask Codex to inspect `Get-CimInstance Win32_VideoController | Select-Object Name`. CPU-only Qwen is documented as very slow; do not promise successful visual embedding indexing on CPU. In that situation, local keyword search + inspected screenshots is a **limited fallback**, not proof of full local video-search parity.
+## First-time setup
 
-## Pilot setup (only after preflight)
-
-Follow [upstream Windows install instructions](https://github.com/ssrajadh/sentrysearch). From a *separate checkout* of SentrySearch, Python 3.11/3.12 and uv:
-
-```powershell
-uv python install 3.12
-git clone https://github.com/ssrajadh/sentrysearch.git
-cd sentrysearch
-# Use CUDA quantization when NVIDIA VRAM is sufficient:
-uv tool install --python 3.12 ".[local-quantized]"
-```
-
-Use local `qwen2b` first where appropriate and ensure the local tool can read the user's approved MP4. SentrySearch accepts a folder path for indexing. Test one **small isolated folder** (not all 40 recordings). The `--no-skip-still` flag matters for screen-sharing where dashboards remain static.
+1. User configures Azure Foundry model deployments and proxies them through LiteLLM; confirm their existence.
+2. Read `docs/litellm-integration.md`; perform synthetic chat, vision, text and video embedding probes **before real videos**.
+3. Install SentrySearch from its upstream checkout using `uv` and Python 3.12. Its `litellm` **proxy mode** requires no in-process LiteLLM installation.
+4. Connect environment variables securely to the proxy, not directly to Azure.
+5. Select `hybrid`:
 
 ```powershell
-sentrysearch index "C:\path\to\one-approved-meeting" --backend local --model qwen2b --no-skip-still
-sentrysearch search "Kubernetes terminal error shown on screen" --results 5 --no-trim
+.\scripts\select-provider.ps1 -Provider hybrid
 ```
 
-Upstream CLI should be inspected before use because dependency/flag behavior can change. On-screen small text may require retrieving full-resolution frames and optional OCR. The local model may be impractical on underpowered GPUs; stop/record failure instead of silently using Gemini or another hosted backend.
-
-## Existing transcript handling
-
-Use `transcript.txt` directly. Agent may use keyword/text search tools first (`rg` or PowerShell `Select-String`) without embedding. SentrySearch does **not** directly ingest transcripts. If transcripts have timestamps, map speech to original MP4. If they lack timestamps and a speech timestamp is required, see `docs/transcript-timestamps.md`.
-
-## Run
+Once `meeting-video-embedding` is proven compatible with SentrySearch:
 
 ```powershell
-.\scripts\select-provider.ps1 -Provider local
+sentrysearch index "C:\path\to\one-authorized-meeting" --backend litellm --model meeting-video-embedding --no-skip-still
+sentrysearch search "Kubernetes deployment error shown on screen" --results 5 --no-trim
 ```
 
-Agent prompt:
+The `--no-skip-still` option helps avoid accidentally excluding static slides/dashboards. Do not invoke these commands on real customer videos unless cloud model processing is approved.
 
-> Read AGENTS.md, config/pipeline.json, docs/local-mvp.md and skills/analyze-meeting/SKILL.md. Verify GPU hardware. For ONE meeting, keep transcript.txt as primary speech source. Use local SentrySearch video retrieval (if hardware permits) to find a **screen-only** fact and return exact seekable clip times. No VideoDB, Gemini, Azure or other cloud ingestion. Optional Whisper only if genuinely needed for missing timestamps. Report incomplete capabilities; do not claim full visual understanding from transcript.
+## What if Azure video embedding cannot pass through LiteLLM?
 
-## Validation
+- **Stop** and report the failed video-payload/endpoint test. Do not substitute text-only embeddings into SentrySearch video indexes.
+- As a *limited pilot*, reuse existing transcripts and sample specific original-resolution frames (e.g. with FFmpeg) to submit to a verified `meeting-vision` model through LiteLLM. Compare visual facts against real clips. This supports some screen analysis but does **not** provide general native video semantic search.
+- Keep the VideoDB path as primary, which remains functional independently of this blocker. An actual video adapter would be a separate, minimal, explicitly approved development scope.
 
-- [ ] Correct MP4/transcript pairing confirmed
-- [ ] GPU/VRAM checked and Qwen local install tested or limitation recorded
-- [ ] Local visual index/search ran (or failure documented)
-- [ ] At least one seen-but-not-said fact grounded in video clip
-- [ ] Original transcript preserved; optional timing sidecar separate
-- [ ] No VideoDB credits consumed; no cloud video embedding used
-- [ ] Any clips/frames shown to a cloud coding agent explicitly disclosed
-- [ ] Results under `data/local-validation.md` (gitignored)
+## Optional transcription
 
-If CPU-only hardware blocks native video embeddings, compare with VideoDB Cloud first, then decide on a managed Azure hybrid experiment (see `docs/azure-foundry.md`) rather than building a bespoke stack.
+Use supplied transcript.txt files. Optional `faster-whisper` CPU int8 base only for missing timestamps/gaps; never bulk-transcribe by default. See `docs/transcript-timestamps.md`.
+
+## Verify
+
+Record the exact proxy alias IDs (never keys), Foundry model deployments (non-secret names), embedding dimensions, retriever status, one correct screen-only clip, one speech-only citation, costs and whether MP4 chunks/frames left the machine. Save private report under ignored `data/`.
+
+**Status:** Azure/SentrySearch video embedding integration not yet validated on the user's gateway. No real video has been processed.
