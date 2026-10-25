@@ -1,13 +1,14 @@
 ---
 name: select-provider
-description: Switch Meeting Intelligence System between VideoDB Cloud and local-first MCP without changing the business workflows or creating an application.
+description: Switch Meeting Intelligence System between VideoDB Cloud and local SentrySearch visual retrieval; keep existing transcripts and optional Whisper policy.
 ---
 
 # Select Provider
 
-Use `scripts/select-provider.ps1 -Provider videodb|local` to change `config/provider.json`, then follow `docs/windows-mvp.md` or `docs/local-mvp.md`.
+Use `scripts/select-provider.ps1 -Provider videodb|local` to set `config/provider.json`. Follow `config/pipeline.json` and `AGENTS.md`.
 
-Show the user:
-- `videodb`: uploaded MP4 and AI processing on VideoDB Cloud; consumes usage credit; visual analyzers and clips.
-- `local`: local transcription, OCR, keyframes and search; no VideoDB API fee; image reasoning may still involve cloud coding-agent model.
-Do not silently switch providers or mix evidence between provider runs.
+- `videodb` — **primary**: VideoDB native skill/MCP/SDK; approved MP4 uploaded/processed by VideoDB, billed against usage credit.
+- `local` — **alternative**: SentrySearch CLI with native local Qwen3-VL embedding for video clips; no VideoDB charges. Needs hardware preflight (24 GB **RAM**, GPU VRAM unknown). Transcript.txt is searched separately.
+- Lightweight `faster-whisper` is optional/on-demand only for missing transcript timecodes or transcription gaps.
+- Azure Foundry multimodal embeddings (Voyage/Qwen) are optional **cloud** experiments outside strict local mode, require user approval and real deployment verification.
+- Never automatically switch providers or claim both passed acceptance without processing and checking the same video locally.
